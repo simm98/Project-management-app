@@ -1,0 +1,7 @@
+version: '1.0'
+services:
+  project-management-app:
+    build: .
+    container_name: project-management-app
+    ports:
+      - '8000:8000'

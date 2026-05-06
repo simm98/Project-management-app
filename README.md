@@ -2,8 +2,10 @@
 Service to create, update, share, and delete projects information (details, attached documents)
 
 comandos para construir imagen y correr contenedor:
-docker-compose build --no-cache
-docker-compose up -d
+
+-docker-compose build --no-cache
+
+-docker-compose up -d
 
 urls de revision: 
 

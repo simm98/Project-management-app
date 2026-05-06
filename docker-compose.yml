@@ -1,7 +1,22 @@
-version: '1.0'
+version: '1.1'
 services:
   project-management-app:
     build: .
     container_name: project-management-app
     ports:
       - '8000:8000'
+  
+  db:
+    image: postgres:15
+    container_name: database-PostgreSQL
+    environment:
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: root123
+      POSTGRES_DB: postgres
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+volumes:
+  postgres_data:

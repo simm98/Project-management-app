@@ -1,8 +1,8 @@
-import databases
-import sqlalchemy
+from sqlalchemy import create_engine
+from sqlalchemy.orm import sessionmaker, declarative_base
 
 DATABASE_URL = "postgresql://admin:root123@db:5432/postgres"
 
-database = databases.Database(DATABASE_URL)
-metadata = sqlalchemy.MetaData()
-engine = sqlalchemy.create_engine(DATABASE_URL)
+engine = create_engine(DATABASE_URL)
+SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+Base = declarative_base()

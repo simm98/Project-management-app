@@ -1,9 +1,9 @@
-import sqlalchemy
-from .database import metadata
+from sqlalchemy import Column, Integer, String
+from .database import Base
 
-notes = sqlalchemy.Table(
-    "notes",
-    metadata,
-    sqlalchemy.Column("id", sqlalchemy.Integer, primary_key=True),
-    sqlalchemy.Column("text", sqlalchemy.String),
-)
+class User(Base):
+    __tablename__ = "users"
+
+    id = Column(Integer, primary_key=True, index=True)
+    login = Column(String, unique=True, index=True, nullable=False)
+    password = Column(String, nullable=False)

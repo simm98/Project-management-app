@@ -1,37 +1,32 @@
-from fastapi import FastAPI
-from contextlib import asynccontextmanager
-from .database import database, metadata, engine
-from .crud import create_note, get_notes
-
-metadata.create_all(engine)
+from fastapi import FastAPI, Depends, HTTPException
+from sqlalchemy.orm import Session
+from . import database, models, schemas, crud
 
 app = FastAPI()
 
-# Crear tablas al inicio
-metadata.create_all(engine)
+# Crear tablas
+models.Base.metadata.create_all(bind=database.engine)
 
-# Lifespan context manager
-@asynccontextmanager
-async def lifespan(app: FastAPI):
-    # Startup
-    await database.connect()
-    yield
-    # Shutdown
-    await database.disconnect()
+# Dependencia para obtener sesión
+def get_db():
+    db = database.SessionLocal()
+    try:
+        yield db
+    finally:
+        db.close()
 
-@app.get('/')
-async def read_root():
-    return {'message':'FastAPI + PostgreSQL desde contenedor Docker sencillo'}
+@app.post("/auth", response_model=schemas.UserResponse)
+def create_user(user: schemas.UserCreate, db: Session = Depends(get_db)):
+    if user.password != user.repeat_password:
+        raise HTTPException(status_code=400, detail="Passwords do not match")
+    db_user = crud.get_user_by_login(db, user.login)
+    if db_user:
+        raise HTTPException(status_code=400, detail="User already exists")
+    return crud.create_user(db, user)
 
-@app.get('/items/{item_id}')
-async def read_item(item_id: int, q: str=None):
-    return {'item_id': item_id, 'q': q}
-
-@app.post("/notes/")
-async def add_note(text: str):
-    note_id = await create_note(text)
-    return {"id": note_id, "text": text}
-
-@app.get("/notes/")
-async def list_notes():
-    return await get_notes()
+@app.post("/login")
+def login_user(login_req: schemas.UserLogin, db: Session = Depends(get_db)):
+    db_user = crud.get_user_by_login(db, login_req.login)
+    if not db_user or db_user.password != login_req.password:
+        raise HTTPException(status_code=400, detail="Invalid credentials")
+    return {"message": f"Welcome {db_user.login}!"}

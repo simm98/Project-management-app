@@ -1,10 +1,12 @@
-from .database import database
-from .models import notes
+import schemas, models   
+from sqlalchemy.orm import Session
 
-async def create_note(text: str):
-    query = notes.insert().values(text=text)
-    return await database.execute(query)
+def create_user(db: Session, user: schemas.UserCreate):
+    db_user = models.User(login=user.login, password=user.password)
+    db.add(db_user)
+    db.commit()
+    db.refresh(db_user)
+    return db_user
 
-async def get_notes():
-    query = notes.select()
-    return await database.fetch_all(query)
+def get_user_by_login(db: Session, login: str):
+    return db.query(models.User).filter(models.User.login == login).first()

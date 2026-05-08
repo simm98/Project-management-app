@@ -1,4 +1,4 @@
-import schemas, models   
+from . import schemas, models   
 from sqlalchemy.orm import Session
 
 def create_user(db: Session, user: schemas.UserCreate):

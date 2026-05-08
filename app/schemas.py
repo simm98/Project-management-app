@@ -12,6 +12,17 @@ class UserLogin(BaseModel):
 class UserResponse(BaseModel):
     id: int
     login: str
+    class Config:
+        orm_mode = True
 
+class ProjectCreate(BaseModel):
+    name: str
+    description: str
+
+class ProjectResponse(BaseModel):
+    id: int
+    name: str
+    description: str
+    owner_id: int
     class Config:
         orm_mode = True

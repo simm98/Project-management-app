@@ -83,3 +83,14 @@ def update_project_details(project_id: int, project_update: schemas.ProjectUpdat
     if not project:
         raise HTTPException(status_code=404, detail="Project not found")
     return project
+
+@app.delete("/projects/{project_id}")
+def delete_project(project_id: int, db: Session = Depends(get_db), current_user: models.User = Depends(get_current_user)):
+    project = crud.get_projects_details_by_user(db, project_id)
+    if not project :
+        raise HTTPException(status_code=404, detail='Project not found')
+    if current_user.id == project.owner_id: 
+        crud.delete_project(db, project_id)
+        return {"project_id": project_id, "status": "deleted"}
+    else: 
+        raise HTTPException(status_code=403, detail="Access denied")

@@ -23,3 +23,13 @@ def get_projects_by_user(db: Session, user_id: int):
 
 def get_projects_details_by_user(db: Session, project_id: int):
     return db.query(models.Project).filter(models.Project.id == project_id).first()
+
+def update_projects_details_by_user(db:Session, project_id: int, project_update: schemas.ProjectUpdate, current_user: models.User):
+        db_project = db.query(models.Project).filter(models.Project.id == project_id).first()
+        if db_project.name is not None:
+             db_project.name = project_update.name
+        if db_project.description is not None:
+             db_project.description = project_update.description
+        db.commit()
+        db.refresh(db_project)
+        return db_project

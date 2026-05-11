@@ -76,3 +76,10 @@ def get_project_details(project_id: int, db: Session = Depends(get_db), current_
     if current_user.id != project.owner_id:
         raise HTTPException(status_code=403, detail="Access denied")
     return schemas.ProjectResponse.from_orm(project)
+
+@app.put("/projects/{project_id}/info", response_model=schemas.ProjectResponse)
+def update_project_details(project_id: int, project_update: schemas.ProjectUpdate, db: Session = Depends(get_db), current_user: models.User = Depends(get_current_user)):
+    project = crud.update_projects_details_by_user(db, project_id, project_update, current_user)
+    if not project:
+        raise HTTPException(status_code=404, detail="Project not found")
+    return project

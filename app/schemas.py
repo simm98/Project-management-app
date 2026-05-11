@@ -19,6 +19,10 @@ class ProjectCreate(BaseModel):
     name: str
     description: str
 
+class ProjectUpdate(BaseModel):
+    name: str = None
+    description: str = None
+
 class ProjectResponse(BaseModel):
     id: int
     name: str

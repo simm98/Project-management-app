@@ -5,8 +5,8 @@ from . import database, models, schemas, crud
 from jose import JWTError, jwt
 from datetime import datetime, timedelta
 app = FastAPI()
+database.init_db()
 
-# Dependencia para obtener sesión
 def get_db():
     db = database.SessionLocal()
     try:
@@ -55,15 +55,24 @@ def create_user(user: schemas.UserCreate, db: Session = Depends(get_db)):
 @app.post("/login")
 def login(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(get_db)):
     user = db.query(models.User).filter(models.User.login == form_data.username).first()
-    if not user or user.password != form_data.password:  # aquí puedes luego usar bcrypt
+    if not user or user.password != form_data.password:
         raise HTTPException(status_code=400, detail="Credenciales inválidas")
     access_token = create_access_token({"sub": str(user.id)})
     return {"access_token": access_token, "token_type": "bearer"}
 
 @app.post("/projects", response_model=schemas.ProjectResponse)
 def create_project(project: schemas.ProjectCreate, db: Session = Depends(get_db), current_user: models.User = Depends(get_current_user)):
-    return crud.create_project(db, project, current_user.id)
+    return crud.create_project(db, project, current_user)
 
 @app.get("/projects", response_model=list[schemas.ProjectResponse])
 def get_projects(db: Session = Depends(get_db), current_user: models.User = Depends(get_current_user)):
     return crud.get_projects_by_user(db, current_user.id)
+
+@app.get("/projects/{project_id}/info", response_model=schemas.ProjectResponse)
+def get_project_details(project_id: int, db: Session = Depends(get_db), current_user: models.User = Depends(get_current_user)):
+    project = crud.get_projects_details_by_user(db, project_id)
+    if not project :
+        raise HTTPException(status_code=404, detail='Project not found')
+    if current_user.id != project.owner_id:
+        raise HTTPException(status_code=403, detail="Access denied")
+    return schemas.ProjectResponse.from_orm(project)

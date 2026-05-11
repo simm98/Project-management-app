@@ -13,7 +13,7 @@ class UserResponse(BaseModel):
     id: int
     login: str
     class Config:
-        orm_mode = True
+        from_attributes = True
 
 class ProjectCreate(BaseModel):
     name: str
@@ -24,5 +24,6 @@ class ProjectResponse(BaseModel):
     name: str
     description: str
     owner_id: int
+    users: list[UserLogin] = []
     class Config:
-        orm_mode = True
+        from_attributes = True

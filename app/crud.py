@@ -11,8 +11,8 @@ def create_user(db: Session, user: schemas.UserCreate):
 def get_user_by_login(db: Session, login: str):
     return db.query(models.User).filter(models.User.login == login).first()
 
-def create_project(db:Session, project: schemas.ProjectCreate, user_id:int):
-        db_project = models.Project(name = project.name, description = project.description, owner_id = user_id)
+def create_project(db:Session, project: schemas.ProjectCreate, current_user: models.User):
+        db_project = models.Project(name = project.name, description = project.description, owner_id = current_user.id)
         db.add(db_project)
         db.commit()
         db.refresh(db_project)
@@ -20,3 +20,6 @@ def create_project(db:Session, project: schemas.ProjectCreate, user_id:int):
 
 def get_projects_by_user(db: Session, user_id: int):
     return db.query(models.Project).filter(models.Project.owner_id == user_id).all()
+
+def get_projects_details_by_user(db: Session, project_id: int):
+    return db.query(models.Project).filter(models.Project.id == project_id).first()

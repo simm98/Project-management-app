@@ -1,12 +1,15 @@
-from sqlalchemy import Column, Integer, String, ForeignKey
+from sqlalchemy import Column, Integer, String, ForeignKey, Table
 from sqlalchemy.orm import relationship
 from .database import Base
 
+project_users = Table("project_users", Base.metadata, Column("project_id", Integer, ForeignKey("projects.id"), primary_key=True), Column("user_id", Integer, ForeignKey("users.id"), primary_key=True))
 class User(Base):
     __tablename__ = "users"
     id = Column(Integer, primary_key=True, index=True)
     login = Column(String, unique=True, index=True, nullable=False)
     password = Column(String, nullable=False)
+    projects = relationship("Project", secondary=project_users, back_populates="users")
+    owned_projects = relationship("Project", back_populates="owner")
 
 class Project(Base):
     __tablename__ = "projects"
@@ -14,4 +17,5 @@ class Project(Base):
     name = Column(String, nullable=False)
     description = Column(String, nullable=True)
     owner_id = Column(Integer, ForeignKey("users.id"))
-    owner = relationship("User", backref="projects")
+    owner = relationship("User", back_populates="projects")
+    users = relationship("User", secondary=project_users, back_populates="projects")

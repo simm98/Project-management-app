@@ -38,3 +38,16 @@ def delete_project(db:Session, project_id: int):
     db_project = db.query(models.Project).filter(models.Project.id == project_id).first()
     db.delete(db_project)
     db.commit()
+
+def get_project_documents(db:Session, project_id: int):
+    return db.query(models.Document).filter(models.Document.project_id == project_id).all()
+
+def add_document_to_project(db:Session, project_id: int, filename: str, content_type: str):
+    db_project = db.query(models.Project).filter(models.Project.id == project_id).first()
+    if not db_project:
+        return None
+    document = models.Document(filename=filename, content_type=content_type, project=db_project)
+    db.add(document)
+    db.commit()
+    db.refresh(document)
+    return document

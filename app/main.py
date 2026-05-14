@@ -1,4 +1,4 @@
-from fastapi import FastAPI, Depends, HTTPException, status
+from fastapi import FastAPI, Depends, HTTPException, status, UploadFile, File
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from sqlalchemy.orm import Session
 from . import database, models, schemas, crud
@@ -94,3 +94,26 @@ def delete_project(project_id: int, db: Session = Depends(get_db), current_user:
         return {"project_id": project_id, "status": "deleted"}
     else: 
         raise HTTPException(status_code=403, detail="Access denied")
+    
+@app.get("/projects/{project_id}/documents", response_model=schemas.ProjectDocumentsResponse)
+def get_project_documents(project_id: int, db: Session = Depends(get_db), current_user: models.User = Depends(get_current_user)):
+    documents_content = crud.get_project_documents(db, project_id)
+    owner_id_ver = crud.get_projects_details_by_user(db, project_id).owner_id
+    if not documents_content:
+        raise HTTPException(status_code=404, detail='Documents not found')
+    if current_user.id != owner_id_ver:
+        raise HTTPException(status_code=403, detail="Access denied")
+    return {"documents": documents_content}
+
+
+@app.post("/projects/{project_id}/documents", response_model=schemas.DocumentResponse)
+def upload_doc(project_id: int, file: UploadFile = File(...), db: Session = Depends(get_db), current_user: models.User = Depends(get_current_user)):
+    project = db.query(models.Project).filter(models.Project.id == project_id).first()
+    if not project:
+        raise HTTPException(status_code=404, detail="Project not found")
+    if project.owner_id != current_user.id:
+        raise HTTPException(status_code=403, detail="Access denied")
+    document = crud.add_document_to_project(db, project_id, file.filename, file.content_type)
+    if not document:
+        raise HTTPException(status_code=400, detail="Could not add document")
+    return document

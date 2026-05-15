@@ -1,4 +1,6 @@
+import os
 from fastapi import FastAPI, Depends, HTTPException, status, UploadFile, File
+from fastapi.responses import FileResponse
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from sqlalchemy.orm import Session
 from . import database, models, schemas, crud
@@ -15,7 +17,7 @@ def get_db():
         db.close()
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="login")
-
+UPLOAD_DIR = '/uploads'
 SECRET_KEY = "supersecretkey"  
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 60
@@ -107,13 +109,46 @@ def get_project_documents(project_id: int, db: Session = Depends(get_db), curren
 
 
 @app.post("/projects/{project_id}/documents", response_model=schemas.DocumentResponse)
-def upload_doc(project_id: int, file: UploadFile = File(...), db: Session = Depends(get_db), current_user: models.User = Depends(get_current_user)):
+def upload_document(project_id: int, file: UploadFile = File(...), db: Session = Depends(get_db), current_user: models.User = Depends(get_current_user)):
     project = db.query(models.Project).filter(models.Project.id == project_id).first()
     if not project:
         raise HTTPException(status_code=404, detail="Project not found")
     if project.owner_id != current_user.id:
         raise HTTPException(status_code=403, detail="Access denied")
-    document = crud.add_document_to_project(db, project_id, file.filename, file.content_type)
+    os.makedirs(UPLOAD_DIR, exist_ok=True)
+    file_path = os.path.join(UPLOAD_DIR, file.filename)
+    with open(file_path, "wb") as f:
+        f.write(file.file.read())
+    document = crud.add_document_to_project(db, project_id, file.filename, file.content_type, file_path)
     if not document:
         raise HTTPException(status_code=400, detail="Could not add document")
     return document
+
+@app.get("/document/{document_id}")
+def get_download_document(document_id: int, db: Session = Depends(get_db), current_user: models.User = Depends(get_current_user)):
+    document = crud.get_document_by_id(db, document_id)
+    project = db.query(models.Project).filter(models.Project.id == document.project_id).first()
+    if not document:
+        raise HTTPException(status_code=404, detail="Document not found")
+    if not project:  
+        raise HTTPException(status_code=404, detail="Project not found")
+    if current_user.id != project.owner_id:
+        raise HTTPException(status_code=403, detail="Access denied")
+    return FileResponse(path=document.file_path, filename=document.filename, media_type=document.content_type)
+
+# @app.delete("/document/{document_id}", status_code=204)
+# def delete_document(document_id: int,db: Session = Depends(get_db),current_user: models.User = Depends(get_current_user)):
+#     document = db.query(models.Document).filter(models.Document.id == document_id).first()
+#     if not document:
+#         raise HTTPException(status_code=404, detail="Document not found")
+#     project = db.query(models.Project).filter(models.Project.id == document.project_id).first()
+#     if not project:
+#         raise HTTPException(status_code=404, detail="Project not found")
+
+#     if current_user.id != project.owner_id:
+#         raise HTTPException(status_code=403, detail="Access denied")
+
+#     db.delete(document)
+#     db.commit()
+
+#     return {"detail": "Document deleted successfully"}

@@ -17,6 +17,7 @@ class Document(Base):
     filename = Column(String, index=True)
     content_type = Column(String)
     project_id = Column(Integer, ForeignKey("projects.id"))
+    file_path = Column(String)
     project = relationship("Project", back_populates="documents")
 
 class Project(Base):

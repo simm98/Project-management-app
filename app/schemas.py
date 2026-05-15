@@ -1,5 +1,5 @@
 from pydantic import BaseModel
-from typing import List
+from typing import List, Optional
 
 class UserCreate(BaseModel):
     login: str
@@ -32,8 +32,8 @@ class ProjectCreate(BaseModel):
     description: str
 
 class ProjectUpdate(BaseModel):
-    name: str = None
-    description: str = None
+    name: Optional[str] = None
+    description: Optional[str] = None
 
 class ProjectResponse(BaseModel):
     id: int

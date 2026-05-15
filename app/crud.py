@@ -54,3 +54,17 @@ def add_document_to_project(db:Session, project_id: int, filename: str, content_
 
 def get_document_by_id(db:Session, document_id: int):
     return db.query(models.Document).filter(models.Document.id == document_id).first()
+
+def update_document_by_id(db:Session, document_id: int, filename: str, content_type: str, file_path: str):
+    document = db.query(models.Document).filter(models.Document.id == document_id).first()
+    if not document:
+        return None
+    if document.filename is not None:
+        document.filename = filename
+    if document.content_type is not None:
+        document.content_type = content_type
+    if document.file_path is not None:
+        document.file_path = file_path
+    db.commit()
+    db.refresh(document)
+    return document

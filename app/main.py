@@ -110,7 +110,7 @@ def get_project_documents(project_id: int, db: Session = Depends(get_db), curren
 
 @app.post("/projects/{project_id}/documents", response_model=schemas.DocumentResponse)
 def upload_document(project_id: int, file: UploadFile = File(...), db: Session = Depends(get_db), current_user: models.User = Depends(get_current_user)):
-    project = db.query(models.Project).filter(models.Project.id == project_id).first()
+    project = crud.get_projects_details_by_user(db, project_id)
     if not project:
         raise HTTPException(status_code=404, detail="Project not found")
     if project.owner_id != current_user.id:
@@ -135,6 +135,25 @@ def get_download_document(document_id: int, db: Session = Depends(get_db), curre
     if current_user.id != project.owner_id:
         raise HTTPException(status_code=403, detail="Access denied")
     return FileResponse(path=document.file_path, filename=document.filename, media_type=document.content_type)
+
+@app.put("/document/{document_id}")
+def update_document(document_id: int, file: UploadFile = File(...), db: Session = Depends(get_db), current_user: models.User = Depends(get_current_user)):
+    document = crud.get_document_by_id(db, document_id)
+    project = db.query(models.Project).filter(models.Project.id == document.project_id).first()
+    if not document:
+        raise HTTPException(status_code=404, detail="Document not found")
+    if not project:  
+        raise HTTPException(status_code=404, detail="Project not found")
+    if current_user.id != project.owner_id:
+        raise HTTPException(status_code=403, detail="Access denied")
+    os.makedirs(UPLOAD_DIR, exist_ok=True)
+    file_path = os.path.join(UPLOAD_DIR, file.filename)
+    with open(file_path, "wb") as f:
+        f.write(file.file.read())
+    document = crud.update_document_by_id(db, document_id, file.filename, file.content_type, file_path)
+    if not document:
+        raise HTTPException(status_code=400, detail="Could not update document")
+    return document
 
 # @app.delete("/document/{document_id}", status_code=204)
 # def delete_document(document_id: int,db: Session = Depends(get_db),current_user: models.User = Depends(get_current_user)):

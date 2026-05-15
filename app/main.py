@@ -155,19 +155,15 @@ def update_document(document_id: int, file: UploadFile = File(...), db: Session 
         raise HTTPException(status_code=400, detail="Could not update document")
     return document
 
-# @app.delete("/document/{document_id}", status_code=204)
-# def delete_document(document_id: int,db: Session = Depends(get_db),current_user: models.User = Depends(get_current_user)):
-#     document = db.query(models.Document).filter(models.Document.id == document_id).first()
-#     if not document:
-#         raise HTTPException(status_code=404, detail="Document not found")
-#     project = db.query(models.Project).filter(models.Project.id == document.project_id).first()
-#     if not project:
-#         raise HTTPException(status_code=404, detail="Project not found")
-
-#     if current_user.id != project.owner_id:
-#         raise HTTPException(status_code=403, detail="Access denied")
-
-#     db.delete(document)
-#     db.commit()
-
-#     return {"detail": "Document deleted successfully"}
+@app.delete("/document/{document_id}", status_code=204)
+def delete_document(document_id: int,db: Session = Depends(get_db),current_user: models.User = Depends(get_current_user)):
+    document = crud.get_document_by_id(db, document_id)
+    project = db.query(models.Project).filter(models.Project.id == document.project_id).first()
+    if not document:
+        raise HTTPException(status_code=404, detail="Document not found")
+    if not project:
+        raise HTTPException(status_code=404, detail="Project not found")
+    if current_user.id != project.owner_id:
+        raise HTTPException(status_code=403, detail="Access denied")
+    crud.delete_document_by_id(db, document_id)
+    return {"detail": "Document deleted successfully"}

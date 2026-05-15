@@ -68,3 +68,8 @@ def update_document_by_id(db:Session, document_id: int, filename: str, content_t
     db.commit()
     db.refresh(document)
     return document
+
+def delete_document_by_id(db:Session, document_id: int):
+    document = db.query(models.Document).filter(models.Document.id == document_id).first()
+    db.delete(document)
+    db.commit()

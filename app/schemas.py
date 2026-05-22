@@ -40,7 +40,7 @@ class ProjectResponse(BaseModel):
     name: str
     description: str
     owner_id: int
-    users: list[UserLogin] = []
+    users: list[UserResponse] = []
     documents: list[DocumentResponse] = []
     class Config:
         from_attributes = True

@@ -76,8 +76,10 @@ def get_project_details(project_id: int, db: Session = Depends(get_db), current_
     if not project :
         raise HTTPException(status_code=404, detail='Project not found')
     if current_user.id != project.owner_id:
-        raise HTTPException(status_code=403, detail="Access denied")
-    return schemas.ProjectResponse.from_orm(project)
+        if current_user in project.users:
+            return schemas.ProjectResponse.from_orm(project)
+        else:
+            raise HTTPException(status_code=403, detail="Access denied")
 
 @app.put("/projects/{project_id}/info", response_model=schemas.ProjectResponse)
 def update_project_details(project_id: int, project_update: schemas.ProjectUpdate, db: Session = Depends(get_db), current_user: models.User = Depends(get_current_user)):
@@ -167,3 +169,17 @@ def delete_document(document_id: int,db: Session = Depends(get_db),current_user:
         raise HTTPException(status_code=403, detail="Access denied")
     crud.delete_document_by_id(db, document_id)
     return {"detail": "Document deleted successfully"}
+
+@app.post("/project/{project_id}/invite", response_model=schemas.ProjectResponse)
+def grant_access_to_project(project_id: int, user: str, db: Session = Depends(get_db), current_user: models.User = Depends(get_current_user)):
+    project = crud.get_projects_details_by_user(db, project_id)
+    if not project:
+        raise HTTPException(status_code=404, detail="Project not found")
+    if current_user.id != project.owner_id:
+        raise HTTPException(status_code=403, detail="Access denied")
+    updated_project = crud.add_user_to_project_by_name(db, project_id, user)
+    if updated_project is None:
+        raise HTTPException(status_code=404, detail="User not found")
+    if isinstance(updated_project, dict) and "detail" in updated_project:
+        raise HTTPException(status_code=400, detail=updated_project["detail"])
+    return updated_project

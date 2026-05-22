@@ -19,7 +19,10 @@ def create_project(db:Session, project: schemas.ProjectCreate, current_user: mod
     return db_project
 
 def get_projects_by_user(db: Session, user_id: int):
-    return db.query(models.Project).filter(models.Project.owner_id == user_id).all()
+    owned_projects = db.query(models.Project).filter(models.Project.owner_id == user_id).all()
+    invited_projects = db.query(models.Project).join(models.project_users).filter(models.project_users.c.user_id == user_id).all()
+    projects = list({p.id: p for p in owned_projects + invited_projects}.values())
+    return projects
 
 def get_projects_details_by_user(db: Session, project_id: int):
     return db.query(models.Project).filter(models.Project.id == project_id).first()
@@ -73,3 +76,18 @@ def delete_document_by_id(db:Session, document_id: int):
     document = db.query(models.Document).filter(models.Document.id == document_id).first()
     db.delete(document)
     db.commit()
+
+def add_user_to_project_by_name(db:Session, project_id: int, username: str):
+    db_project = db.query(models.Project).filter(models.Project.id == project_id).first()
+    if not db_project:
+        return None
+    user = db.query(models.User).filter(models.User.login == username).first()
+    if not user:
+        return None
+    exists = db.execute(models.project_users.select().where((models.project_users.c.project_id == project_id) &(models.project_users.c.user_id == user.id))).first()
+    if exists:
+        return {"detail": "User already in project"}
+    db.execute(models.project_users.insert().values(project_id=project_id, user_id=user.id))
+    db.commit()
+    db.refresh(db_project)
+    return db_project

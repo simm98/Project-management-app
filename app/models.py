@@ -27,5 +27,5 @@ class Project(Base):
     description = Column(String, nullable=True)
     owner_id = Column(Integer, ForeignKey("users.id"))
     owner = relationship("User", back_populates="projects")
-    users = relationship("User", secondary=project_users, back_populates="projects")
+    users = relationship("User", secondary=project_users, back_populates="projects", collection_class=set)
     documents = relationship("Document", back_populates="project", cascade="all, delete-orphan")

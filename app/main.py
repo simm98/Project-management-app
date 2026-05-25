@@ -7,8 +7,10 @@ from . import database, models, schemas, crud
 from jose import JWTError, jwt
 from datetime import datetime, timedelta
 from app.services.s3_service import upload_file, download_file, get_file_url
+from dotenv import load_dotenv
 app = FastAPI()
 database.init_db()
+load_dotenv()
 
 def get_db():
     db = database.SessionLocal()
@@ -21,7 +23,7 @@ oauth2_scheme = OAuth2PasswordBearer(tokenUrl="login")
 UPLOAD_DIR = os.getenv("UPLOAD_DIR")
 SECRET_KEY = os.getenv("SECRET_KEY")  
 ALGORITHM = os.getenv("ALGORITHM")
-ACCESS_TOKEN_EXPIRE_MINUTES = os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES")
+ACCESS_TOKEN_EXPIRE_MINUTES = int(os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES"))
 
 def create_access_token(data: dict):
     to_encode = data.copy()
@@ -52,6 +54,7 @@ def create_user(user: schemas.UserCreate, db: Session = Depends(get_db)):
     Da de alta un usuario nuevo a la base de datos.
     
     -Parametros:
+
         user: datos de ususario a registrar con "nombre de usuario", "contraseña" y "contraseña repetida".
 
         db: llama a la sesión de la base de datos.
@@ -70,11 +73,13 @@ def login(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depend
     Login de usuario.
 
     -Parametros:
+
         from_data: datos de ususario para ingresar al login "nombre de usuario" y "contraseña".
 
         db: llama a la sesión de la base de datos.
     
     -Retorno: 
+
         retorna JSON con TOKEN de accesso para todas las operaciones.
     
     """
@@ -90,6 +95,7 @@ def create_project(project: schemas.ProjectCreate, db: Session = Depends(get_db)
     Creación de un proyecto nuevo.
 
     -Parametros:
+
         project: manda el esquema de creación de proyectos para un proyecto nuevo.
 
         db: llama a la sesión de la base de datos.
@@ -97,6 +103,7 @@ def create_project(project: schemas.ProjectCreate, db: Session = Depends(get_db)
         current_user: llama al usuario activo para la base de datos.
 
     -Retorno: 
+
         retorna objeto de projecto creado con el esquema de respuesta del proyecto.
     """
     return crud.create_project(db, project, current_user)
@@ -113,6 +120,7 @@ def get_projects(db: Session = Depends(get_db), current_user: models.User = Depe
         current_user: llama al usuario activo para la base de datos.
 
     -Retorno: 
+
         retorna lista de projectos disponibles para usuario.
     """
     return crud.get_projects_by_user(db, current_user.id)
@@ -123,6 +131,7 @@ def get_project_details(project_id: int, db: Session = Depends(get_db), current_
     Ver detalles de un projecto disponible para usuario.
 
     -Parametros:
+
         project_id: id del proyecto.
 
         db: llama a la sesión de la base de datos.
@@ -130,6 +139,7 @@ def get_project_details(project_id: int, db: Session = Depends(get_db), current_
         current_user: llama al usuario activo para la base de datos.
 
     -Retorno: 
+
         retorna detalles de objeto de projecto disponible para usuario.
     """
     project = crud.get_projects_details_by_user(db, project_id)
@@ -146,6 +156,7 @@ def update_project_details(project_id: int, project_update: schemas.ProjectUpdat
     Actualizar detalles de un projecto disponible para usuario.
 
     -Parametros:
+
         project_id: id del proyecto.
 
         project_update: cadena de detalles para actualziar de un proyecto con "nombre nuevo" y "descripción nueva".
@@ -155,6 +166,7 @@ def update_project_details(project_id: int, project_update: schemas.ProjectUpdat
         current_user: llama al usuario activo para la base de datos.
 
     -Retorno: 
+
         retorna proyecto actualizado disponible para usuario.
     """
     project = crud.update_projects_details_by_user(db, project_id, project_update, current_user)
@@ -168,6 +180,7 @@ def delete_project(project_id: int, db: Session = Depends(get_db), current_user:
     Borra un projecto.
 
     -Parametros:
+
         project_id: id del proyecto.
 
         db: llama a la sesión de la base de datos.
@@ -175,6 +188,7 @@ def delete_project(project_id: int, db: Session = Depends(get_db), current_user:
         current_user: llama al usuario activo para la base de datos.
 
     -Acción: 
+
         Borra proyecto si usuario es el owner del proyecto.
     """
     project = crud.get_projects_details_by_user(db, project_id)
@@ -192,6 +206,7 @@ def get_project_documents(project_id: int, db: Session = Depends(get_db), curren
     Ve documentos de un projecto disponible para usuario.
 
     -Parametros:
+
         project_id: id del proyecto.
 
         db: llama a la sesión de la base de datos.
@@ -199,6 +214,7 @@ def get_project_documents(project_id: int, db: Session = Depends(get_db), curren
         current_user: llama al usuario activo para la base de datos.
 
     -Retorno: 
+
         retorna JSON con documentos de proyecto disponible para usuario.
     """
     documents_content = crud.get_project_documents(db, project_id)
@@ -216,6 +232,7 @@ def upload_document(project_id: int, file: UploadFile = File(...), db: Session =
     Carga documento en projecto disponible para usuario.
 
     -Parametros:
+
         project_id: id del proyecto.
 
         file: Función para cargar archivo o documento a la base de datos (UploadFile de FastAPI).
@@ -225,6 +242,7 @@ def upload_document(project_id: int, file: UploadFile = File(...), db: Session =
         current_user: llama al usuario activo para la base de datos.
 
     -Retorno: 
+
         retorna objeto de documento cargado en proyecto.
     """
     project = crud.get_projects_details_by_user(db, project_id)
@@ -247,6 +265,7 @@ def get_download_document(document_id: int, db: Session = Depends(get_db), curre
     Descarga un documento de projecto disponible para usuario.
 
     -Parametros:
+
         document_id: id del documento.
 
         db: llama a la sesión de la base de datos.
@@ -254,6 +273,7 @@ def get_download_document(document_id: int, db: Session = Depends(get_db), curre
         current_user: llama al usuario activo para la base de datos.
 
     -Retorno: 
+
         retorna descarga de documento cargado en proyecto.
     """
     document = crud.get_document_by_id(db, document_id)
@@ -272,6 +292,7 @@ def update_document(document_id: int, file: UploadFile = File(...), db: Session 
     Actualiza documento en projecto disponible para usuario.
 
     -Parametros:
+
         document_id: id del documento a actualizar.
 
         file: Función para cargar archivo o documento a la base de datos (UploadFile de FastAPI).
@@ -281,6 +302,7 @@ def update_document(document_id: int, file: UploadFile = File(...), db: Session 
         current_user: llama al usuario activo para la base de datos.
 
     -Retorno: 
+
         retorna objeto de documento actualizado cargado en proyecto, mantiene el id.
     """
     document = crud.get_document_by_id(db, document_id)
@@ -306,15 +328,19 @@ def delete_document(document_id: int,db: Session = Depends(get_db),current_user:
     Borra documento en projecto si usuario es el owner.
 
     -Parametros:
+
         document_id: id del documento a actualizar.
 
         db: llama a la sesión de la base de datos.
 
         current_user: llama al usuario activo para la base de datos.
+
     -Acción:
+
         Borra documento de proyecto si el usuario es el owner del proyecto.
 
     -Retorno: 
+
         retorna JSON de confirmación de que el documento en proyecto fue borrado exitosamente.
     """
     document = crud.get_document_by_id(db, document_id)
@@ -334,6 +360,7 @@ def grant_access_to_project(project_id: int, user: str, db: Session = Depends(ge
     Invita a usuario a colaborar en projecto disponible para usuario si es owner del proyecto.
 
     -Parametros:
+
         project_id: id del proyecto.
 
         user: nombre de usuario al que se le darán permisos.
@@ -343,6 +370,7 @@ def grant_access_to_project(project_id: int, user: str, db: Session = Depends(ge
         current_user: llama al usuario activo para la base de datos.
 
     -Retorno: 
+    
         retorna objeto del proyecto actualizado con lista de usuarios invitados al proyecto.
     """
     project = crud.get_projects_details_by_user(db, project_id)

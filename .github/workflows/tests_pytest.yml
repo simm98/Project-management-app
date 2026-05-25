@@ -1,0 +1,49 @@
+name: CI Tests
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  test:
+    runs-on: python:3.13-slim
+
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_USER: admin
+          POSTGRES_PASSWORD: root123
+          POSTGRES_DB: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd="pg_isready -U postgres"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=5
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.13"
+
+      - name: Install dependencies
+        run: |
+          pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install pytest pytest-cov moto
+
+      - name: Run tests with coverage
+        run: pytest --cov=app --cov-report=term-missing --cov-report=xml
+
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v3
+        with:
+          fail_ci_if_error: true

@@ -5,3 +5,5 @@ psycopg2-binary
 python-jose[cryptography]
 python-multipart
 typing
+boto3
+python-dotenv

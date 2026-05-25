@@ -6,6 +6,7 @@ from sqlalchemy.orm import Session
 from . import database, models, schemas, crud
 from jose import JWTError, jwt
 from datetime import datetime, timedelta
+from app.services.s3_service import upload_file, download_file, get_file_url
 app = FastAPI()
 database.init_db()
 
@@ -17,10 +18,10 @@ def get_db():
         db.close()
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="login")
-UPLOAD_DIR = '/uploads'
-SECRET_KEY = "supersecretkey"  
-ALGORITHM = "HS256"
-ACCESS_TOKEN_EXPIRE_MINUTES = 60
+UPLOAD_DIR = os.getenv("UPLOAD_DIR")
+SECRET_KEY = os.getenv("SECRET_KEY")  
+ALGORITHM = os.getenv("ALGORITHM")
+ACCESS_TOKEN_EXPIRE_MINUTES = os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES")
 
 def create_access_token(data: dict):
     to_encode = data.copy()
@@ -76,10 +77,9 @@ def get_project_details(project_id: int, db: Session = Depends(get_db), current_
     if not project :
         raise HTTPException(status_code=404, detail='Project not found')
     if current_user.id != project.owner_id:
-        if current_user in project.users:
-            return schemas.ProjectResponse.from_orm(project)
-        else:
+        if current_user not in project.users:
             raise HTTPException(status_code=403, detail="Access denied")
+    return project
 
 @app.put("/projects/{project_id}/info", response_model=schemas.ProjectResponse)
 def update_project_details(project_id: int, project_update: schemas.ProjectUpdate, db: Session = Depends(get_db), current_user: models.User = Depends(get_current_user)):

@@ -1,7 +1,7 @@
-version: '1.1'
 services:
   project-management-app:
     build: .
+    env_file: .env/.env
     container_name: project-management-app
     ports:
       - '8000:8000'

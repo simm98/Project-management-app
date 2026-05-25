@@ -48,6 +48,15 @@ def get_current_user(token: str = Depends(oauth2_scheme), db: Session = Depends(
 ###########################################################################################################################################
 @app.post("/auth", response_model=schemas.UserResponse)
 def create_user(user: schemas.UserCreate, db: Session = Depends(get_db)):
+    """
+    Da de alta un usuario nuevo a la base de datos.
+    
+    -Parametros:
+        user: datos de ususario a registrar con "nombre de usuario", "contraseña" y "contraseña repetida".
+
+        db: llama a la sesión de la base de datos.
+
+    """
     if user.password != user.repeat_password:
         raise HTTPException(status_code=400, detail="Passwords do not match")
     db_user = crud.get_user_by_login(db, user.login)
@@ -57,6 +66,18 @@ def create_user(user: schemas.UserCreate, db: Session = Depends(get_db)):
 
 @app.post("/login")
 def login(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(get_db)):
+    """
+    Login de usuario.
+
+    -Parametros:
+        from_data: datos de ususario para ingresar al login "nombre de usuario" y "contraseña".
+
+        db: llama a la sesión de la base de datos.
+    
+    -Retorno: 
+        retorna JSON con TOKEN de accesso para todas las operaciones.
+    
+    """
     user = db.query(models.User).filter(models.User.login == form_data.username).first()
     if not user or user.password != form_data.password:
         raise HTTPException(status_code=400, detail="Credenciales inválidas")
@@ -65,14 +86,52 @@ def login(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depend
 
 @app.post("/projects", response_model=schemas.ProjectResponse)
 def create_project(project: schemas.ProjectCreate, db: Session = Depends(get_db), current_user: models.User = Depends(get_current_user)):
+    """
+    Creación de un proyecto nuevo.
+
+    -Parametros:
+        project: manda el esquema de creación de proyectos para un proyecto nuevo.
+
+        db: llama a la sesión de la base de datos.
+
+        current_user: llama al usuario activo para la base de datos.
+
+    -Retorno: 
+        retorna objeto de projecto creado con el esquema de respuesta del proyecto.
+    """
     return crud.create_project(db, project, current_user)
 
 @app.get("/projects", response_model=list[schemas.ProjectResponse])
 def get_projects(db: Session = Depends(get_db), current_user: models.User = Depends(get_current_user)):
+    """
+    Ver projectos disponibles para usuario.
+
+    -Parametros:
+
+        db: llama a la sesión de la base de datos.
+
+        current_user: llama al usuario activo para la base de datos.
+
+    -Retorno: 
+        retorna lista de projectos disponibles para usuario.
+    """
     return crud.get_projects_by_user(db, current_user.id)
 
 @app.get("/projects/{project_id}/info", response_model=schemas.ProjectResponse)
 def get_project_details(project_id: int, db: Session = Depends(get_db), current_user: models.User = Depends(get_current_user)):
+    """
+    Ver detalles de un projecto disponible para usuario.
+
+    -Parametros:
+        project_id: id del proyecto.
+
+        db: llama a la sesión de la base de datos.
+
+        current_user: llama al usuario activo para la base de datos.
+
+    -Retorno: 
+        retorna detalles de objeto de projecto disponible para usuario.
+    """
     project = crud.get_projects_details_by_user(db, project_id)
     if not project :
         raise HTTPException(status_code=404, detail='Project not found')
@@ -83,6 +142,21 @@ def get_project_details(project_id: int, db: Session = Depends(get_db), current_
 
 @app.put("/projects/{project_id}/info", response_model=schemas.ProjectResponse)
 def update_project_details(project_id: int, project_update: schemas.ProjectUpdate, db: Session = Depends(get_db), current_user: models.User = Depends(get_current_user)):
+    """
+    Actualizar detalles de un projecto disponible para usuario.
+
+    -Parametros:
+        project_id: id del proyecto.
+
+        project_update: cadena de detalles para actualziar de un proyecto con "nombre nuevo" y "descripción nueva".
+
+        db: llama a la sesión de la base de datos.
+
+        current_user: llama al usuario activo para la base de datos.
+
+    -Retorno: 
+        retorna proyecto actualizado disponible para usuario.
+    """
     project = crud.update_projects_details_by_user(db, project_id, project_update, current_user)
     if not project:
         raise HTTPException(status_code=404, detail="Project not found")
@@ -90,6 +164,19 @@ def update_project_details(project_id: int, project_update: schemas.ProjectUpdat
 
 @app.delete("/projects/{project_id}")
 def delete_project(project_id: int, db: Session = Depends(get_db), current_user: models.User = Depends(get_current_user)):
+    """
+    Borra un projecto.
+
+    -Parametros:
+        project_id: id del proyecto.
+
+        db: llama a la sesión de la base de datos.
+
+        current_user: llama al usuario activo para la base de datos.
+
+    -Acción: 
+        Borra proyecto si usuario es el owner del proyecto.
+    """
     project = crud.get_projects_details_by_user(db, project_id)
     if not project :
         raise HTTPException(status_code=404, detail='Project not found')
@@ -101,6 +188,19 @@ def delete_project(project_id: int, db: Session = Depends(get_db), current_user:
     
 @app.get("/projects/{project_id}/documents", response_model=schemas.ProjectDocumentsResponse)
 def get_project_documents(project_id: int, db: Session = Depends(get_db), current_user: models.User = Depends(get_current_user)):
+    """
+    Ve documentos de un projecto disponible para usuario.
+
+    -Parametros:
+        project_id: id del proyecto.
+
+        db: llama a la sesión de la base de datos.
+
+        current_user: llama al usuario activo para la base de datos.
+
+    -Retorno: 
+        retorna JSON con documentos de proyecto disponible para usuario.
+    """
     documents_content = crud.get_project_documents(db, project_id)
     owner_id_ver = crud.get_projects_details_by_user(db, project_id).owner_id
     if not documents_content:
@@ -112,6 +212,21 @@ def get_project_documents(project_id: int, db: Session = Depends(get_db), curren
 
 @app.post("/projects/{project_id}/documents", response_model=schemas.DocumentResponse)
 def upload_document(project_id: int, file: UploadFile = File(...), db: Session = Depends(get_db), current_user: models.User = Depends(get_current_user)):
+    """
+    Carga documento en projecto disponible para usuario.
+
+    -Parametros:
+        project_id: id del proyecto.
+
+        file: Función para cargar archivo o documento a la base de datos (UploadFile de FastAPI).
+
+        db: llama a la sesión de la base de datos.
+
+        current_user: llama al usuario activo para la base de datos.
+
+    -Retorno: 
+        retorna objeto de documento cargado en proyecto.
+    """
     project = crud.get_projects_details_by_user(db, project_id)
     if not project:
         raise HTTPException(status_code=404, detail="Project not found")
@@ -128,6 +243,19 @@ def upload_document(project_id: int, file: UploadFile = File(...), db: Session =
 
 @app.get("/document/{document_id}")
 def get_download_document(document_id: int, db: Session = Depends(get_db), current_user: models.User = Depends(get_current_user)):
+    """
+    Descarga un documento de projecto disponible para usuario.
+
+    -Parametros:
+        document_id: id del documento.
+
+        db: llama a la sesión de la base de datos.
+
+        current_user: llama al usuario activo para la base de datos.
+
+    -Retorno: 
+        retorna descarga de documento cargado en proyecto.
+    """
     document = crud.get_document_by_id(db, document_id)
     project = db.query(models.Project).filter(models.Project.id == document.project_id).first()
     if not document:
@@ -140,6 +268,21 @@ def get_download_document(document_id: int, db: Session = Depends(get_db), curre
 
 @app.put("/document/{document_id}")
 def update_document(document_id: int, file: UploadFile = File(...), db: Session = Depends(get_db), current_user: models.User = Depends(get_current_user)):
+    """
+    Actualiza documento en projecto disponible para usuario.
+
+    -Parametros:
+        document_id: id del documento a actualizar.
+
+        file: Función para cargar archivo o documento a la base de datos (UploadFile de FastAPI).
+
+        db: llama a la sesión de la base de datos.
+
+        current_user: llama al usuario activo para la base de datos.
+
+    -Retorno: 
+        retorna objeto de documento actualizado cargado en proyecto, mantiene el id.
+    """
     document = crud.get_document_by_id(db, document_id)
     project = db.query(models.Project).filter(models.Project.id == document.project_id).first()
     if not document:
@@ -159,6 +302,21 @@ def update_document(document_id: int, file: UploadFile = File(...), db: Session 
 
 @app.delete("/document/{document_id}", status_code=204)
 def delete_document(document_id: int,db: Session = Depends(get_db),current_user: models.User = Depends(get_current_user)):
+    """
+    Borra documento en projecto si usuario es el owner.
+
+    -Parametros:
+        document_id: id del documento a actualizar.
+
+        db: llama a la sesión de la base de datos.
+
+        current_user: llama al usuario activo para la base de datos.
+    -Acción:
+        Borra documento de proyecto si el usuario es el owner del proyecto.
+
+    -Retorno: 
+        retorna JSON de confirmación de que el documento en proyecto fue borrado exitosamente.
+    """
     document = crud.get_document_by_id(db, document_id)
     project = db.query(models.Project).filter(models.Project.id == document.project_id).first()
     if not document:
@@ -172,6 +330,21 @@ def delete_document(document_id: int,db: Session = Depends(get_db),current_user:
 
 @app.post("/project/{project_id}/invite", response_model=schemas.ProjectResponse)
 def grant_access_to_project(project_id: int, user: str, db: Session = Depends(get_db), current_user: models.User = Depends(get_current_user)):
+    """
+    Invita a usuario a colaborar en projecto disponible para usuario si es owner del proyecto.
+
+    -Parametros:
+        project_id: id del proyecto.
+
+        user: nombre de usuario al que se le darán permisos.
+
+        db: llama a la sesión de la base de datos.
+
+        current_user: llama al usuario activo para la base de datos.
+
+    -Retorno: 
+        retorna objeto del proyecto actualizado con lista de usuarios invitados al proyecto.
+    """
     project = crud.get_projects_details_by_user(db, project_id)
     if not project:
         raise HTTPException(status_code=404, detail="Project not found")

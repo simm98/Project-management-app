@@ -19,7 +19,7 @@ jobs:
 
       - name: Build and start services
         run: |
-          docker-compose -f docker-compose.yml up -d --build
+          docker compose -f docker-compose.yml up -d --build
 
       - name: Wait for Postgres to be ready
         run: |
@@ -39,5 +39,5 @@ jobs:
 
       - name: Shut down services
         if: always()
-        run: docker-compose -f docker-compose.yml down
+        run: docker compose -f docker-compose.yml down
 

@@ -8,3 +8,4 @@ typing
 boto3
 python-dotenv
 pytest
+pytest-cov

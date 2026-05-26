@@ -46,9 +46,6 @@ jobs:
         run: |
           docker compose -f docker-compose.yml -f docker-compose.override.yml up --build --exit-code-from test
 
-      - name: Copy coverage file
-        run: docker cp project-management-tests:/app/coverage.xml coverage.xml
-
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v3
         with:

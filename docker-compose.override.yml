@@ -5,7 +5,9 @@ services:
     build: .
     env_file: .env/.env
     container_name: project-management-tests
-    command: sh -c "PYTHONPATH=/app pytest tests --cov=app --cov-report=term-missing --cov-report=xml
+    environment:
+      - PYTHONPATH=/app
+    command: pytest tests --cov=app --cov-report=term-missing --cov-report=xml
 
     depends_on:
       - db

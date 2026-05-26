@@ -24,9 +24,9 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v2
 
-      - name: Run tests only
-        run: docker compose -f docker-compose.yml -f docker-compose.override.yml up --build --exit-code-from test
-
+      - name: Build and start services
+        run: |
+          docker compose -f docker-compose.yml up -d --build
 
       - name: Wait for Postgres to be ready
         run: |
@@ -37,7 +37,7 @@ jobs:
 
       - name: Run tests inside container
         run: |
-          docker exec project-management-app pytest --cov=app --cov-report=term-missing --cov-report=xml
+          docker compose -f docker-compose.yml -f docker-compose.override.yml up --build --exit-code-from test
 
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v3

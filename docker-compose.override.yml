@@ -7,7 +7,7 @@ services:
     container_name: project-management-tests
     environment:
       - PYTHONPATH=/app
-    command: pytest tests --cov=app --cov-report=term-missing --cov-report=xml
+    command: pytest tests -s --cov=app --cov-report=term-missing --cov-report=xml
 
     depends_on:
       - db

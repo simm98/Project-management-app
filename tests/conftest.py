@@ -15,6 +15,8 @@ def auth_token():
         "login": "user",
         "password": "1234"
     })
+    print(response)
     data = response.json()
+    print(data)
     return data["access_token"]
 

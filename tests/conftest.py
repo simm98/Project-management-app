@@ -6,15 +6,8 @@ client = TestClient(app)
 
 @pytest.fixture
 def auth_token():
-    client.post("/auth", json={
-        "login": "user",
-        "password": "1234",
-        "repeat_password": "1234"
-    })
-    response = client.post("/login", json={
-        "login": "user",
-        "password": "1234"
-    })
+    client.post("/auth", data={"login": "user", "password": "1234", "repeat_password": "1234"})
+    response = client.post("/login", data={"username": "user", "password": "1234"})
     print(response)
     data = response.json()
     print(data)

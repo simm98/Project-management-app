@@ -4,11 +4,11 @@ from app.main import app
 
 client = TestClient(app)
 
-@pytest.fixture
+@pytest.fixture(scope="session")
 def user_data():
     return {"username" : 'default_user', "password": "1234"}
 
-@pytest.fixture
+@pytest.fixture(scope="session")
 def sign_in(user_data):
     def _register():
         r = client.post("/auth", json={"login": user_data["username"], "password": user_data["password"], "repeat_password": user_data["password"]})
@@ -16,7 +16,7 @@ def sign_in(user_data):
         return r
     return _register
 
-@pytest.fixture
+@pytest.fixture(scope="session")
 def login(user_data):
     def _login():
         response = client.post("/login", data={"username": user_data["username"], "password": user_data["password"]})
@@ -24,7 +24,7 @@ def login(user_data):
         return response
     return _login
 
-@pytest.fixture
+@pytest.fixture(scope="session")
 def auth_token(login):
     response = login()
     data = response.json()

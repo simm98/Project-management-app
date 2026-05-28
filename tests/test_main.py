@@ -108,3 +108,9 @@ def test_download_project_document_by_id(auth_token):
     file_content = b"Contenido de prueba"
     assert download_resp.status_code == 200
     assert download_resp.content == file_content
+
+def test_delete_project_document_by_id(auth_token):
+    headers = {"Authorization": f"Bearer {auth_token}"}
+    response = client.delete("/document/1",headers=headers)
+    assert response.status_code == 200
+    assert response.json()["detail"] == "Document deleted successfully"

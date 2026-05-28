@@ -5,11 +5,11 @@ from app.main import app
 client = TestClient(app)
 
 def test_sign_in(users, sign_in):
-    users["users"] = 'user1'
+    users["user"] = 'user1'
     assert sign_in["login"] == "user1"
 
 def test_login(users, login):
-    users["users"] = 'user1'
+    users["user"] = 'user1'
     assert login.status_code == 200
 
 def test_create_project(auth_token):
@@ -42,13 +42,14 @@ def test_update_project(auth_token):
     assert response.json()["name"] == "Proyecto Demo Update"
     assert response.json()["description"] == "Este es un proyecto de prueba actualizado"
 
-# def test_delete_project(auth_token):
-#     headers = {"Authorization": f"Bearer {auth_token}"}
-#     response = client.post("/projects", json={"name": "Proyecto Demo Delete", "description": "Este es un proyecto de prueba para borrar"}, headers=headers)
-#     assert response.status_code == 200
-#     response_del = client.delete("/projects/2")
-#     assert response_del.status_code == 200
-#     assert response_del.json()["status"] == "deleted"
+def test_delete_project(auth_token):
+    headers = {"Authorization": f"Bearer {auth_token}"}
+    response = client.post("/projects", json={"name": "Proyecto Demo Delete", "description": "Este es un proyecto de prueba para borrar"}, headers=headers)
+    assert response.status_code == 200
+    project_id = response.json()["id"]
+    response_del = client.delete(f"/projects/{project_id}", headers=headers)
+    assert response_del.status_code == 200
+    assert response_del.json()["status"] == "deleted"
 
 # def test_get_project_access(auth_token_other_user):
 #     headers = {"Authorization": f"Bearer {auth_token_other_user}"}

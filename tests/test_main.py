@@ -32,3 +32,10 @@ def test_get_project_access(auth_token_other_user):
     response = client.get("/projects/1/info", headers=headers)
     assert response.status_code == 403
     assert response.json()["detail"] == "Access denied"
+
+def test_update_project(auth_token):
+    headers = {"Authorization": f"Bearer {auth_token}"}
+    response = client.put("/projects/1/info", json={"name": "Proyecto Demo Update", "description": "Este es un proyecto de prueba actualizado"}, headers=headers)
+    assert response.status_code == 200
+    assert response.json()["name"] == "Proyecto Demo Update"
+    assert response.json()["description"] == "Este es un proyecto de prueba actualizado"

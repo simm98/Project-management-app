@@ -75,13 +75,11 @@ def test_login_other_user(user_data, login):
 def test_get_proyect_list_status_code(auth_token):
     headers = {"Authorization": f"Bearer {auth_token}"}
     response = client.get("/projects", headers=headers)
-    print('Respuesta de ver proyectos con usuario 2: ', response.json())
     assert response.status_code == 200
 
 def test_create_project_other_user(auth_token):
     headers = {"Authorization": f"Bearer {auth_token}"}
     response = client.post("/projects", json={"name": "Proyecto Demo User 2", "description": "Este es un proyecto de prueba"}, headers=headers)
-    print('Respuesta de crear proyecto con usuario 2: ', response.json())
     assert response.status_code == 200
     assert response.json()["name"] == "Proyecto Demo User 2"
 
@@ -100,4 +98,11 @@ def test_get_project_documents(auth_token):
     response = client.get("/projects/1/documents",headers=headers)
     assert response.status_code == 200
     data = response.json()
-    assert "test.txt" in data["documents"]
+    assert data["filename"] == "test.txt"
+
+def test_download_project_document_by_id(auth_token):
+    headers = {"Authorization": f"Bearer {auth_token}"}
+    download_resp = client.get("/document/1",headers=headers)
+    file_content = b"Contenido de prueba"
+    assert download_resp.status_code == 200
+    assert download_resp.content == file_content

@@ -8,7 +8,8 @@ def test_sign_in(users, sign_in):
     users["users"] = 'user1'
     assert sign_in["login"] == "user1"
 
-def test_login(login):
+def test_login(users, login):
+    users["users"] = 'user1'
     assert login.status_code == 200
 
 def test_create_project(auth_token):

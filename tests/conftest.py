@@ -4,7 +4,7 @@ from app.main import app
 
 client = TestClient(app)
 
-@pytest.fixture
+@pytest.fixture(scope='session')
 def users():
     return {'user' : '-'}
 

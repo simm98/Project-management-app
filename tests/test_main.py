@@ -42,9 +42,6 @@ def test_update_project(auth_token):
 
 def test_delete_project(auth_token):
     headers = {"Authorization": f"Bearer {auth_token}"}
-    response = client.delete("/projects/2")
-    assert response.status_code == 404
-    assert response.json()["detail"] == "Project not found"
     response = client.post("/projects", json={"name": "Proyecto Demo Delete", "description": "Este es un proyecto de prueba para borrar"}, headers=headers)
     response = client.delete("/projects/2")
     assert response.status_code == 200

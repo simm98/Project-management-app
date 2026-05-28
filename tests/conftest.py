@@ -13,3 +13,11 @@ def auth_token():
     data = response.json()
     return data["access_token"]
 
+@pytest.fixture
+def auth_token_other_user():
+    r = client.post("/auth", json={"login": "user2", "password": "1234", "repeat_password": "1234"})
+    print("Auth response:", r.status_code, r.json())
+    response = client.post("/login", data={"username": "user2", "password": "1234"})
+    print("Login response:", response.status_code, response.json())
+    data = response.json()
+    return data["access_token"]

@@ -26,3 +26,9 @@ def test_get_project_by_id(auth_token):
     response = client.get("/projects/1/info", headers=headers)
     assert response.status_code == 200
     assert response.json()["id"] == 1
+
+def test_get_project_access(auth_token_other_user):
+    headers = {"Authorization": f"Bearer {auth_token_other_user}"}
+    response = client.get("/projects/1/info", headers=headers)
+    assert response.status_code == 403
+    assert response.json()["detail"] == "Access denied"

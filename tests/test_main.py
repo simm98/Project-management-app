@@ -98,7 +98,8 @@ def test_get_project_documents(auth_token):
     response = client.get("/projects/1/documents",headers=headers)
     assert response.status_code == 200
     data = response.json()
-    assert data["filename"] == "test.txt"
+    documents = data["documents"]
+    assert documents["filename"] == "test.txt"
 
 def test_download_project_document_by_id(auth_token):
     headers = {"Authorization": f"Bearer {auth_token}"}

@@ -12,8 +12,8 @@ def sign_in():
     return r.json()
 
 @pytest.fixture(scope='session')
-def login():
-    user = sign_in()
+def login(sign_in):
+    user = sign_in
     response = client.post("/login", data={"username": f"{user["login"]}", "password": "1234"})
     yield response
     print("Login response:", response.status_code, response.json())

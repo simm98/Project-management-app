@@ -4,20 +4,21 @@ from app.main import app
 
 client = TestClient(app)
 
-@pytest.fixture
-def auth_token():
-    r = client.post("/auth", json={"login": "user1", "password": "1234", "repeat_password": "1234"})
+@pytest.fixture(scope='session')
+def sign_in():
+    user = 'user1'
+    r = client.post("/auth", json={"login": f"{user}", "password": "1234", "repeat_password": "1234"})
     print("Auth response:", r.status_code, r.json())
-    response = client.post("/login", data={"username": "user1", "password": "1234"})
-    print("Login response:", response.status_code, response.json())
-    data = response.json()
-    return data["access_token"]
+    return r.json()
 
-@pytest.fixture
-def auth_token_other_user():
-    r = client.post("/auth", json={"login": "user2", "password": "1234", "repeat_password": "1234"})
-    print("Auth response:", r.status_code, r.json())
-    response = client.post("/login", data={"username": "user2", "password": "1234"})
+@pytest.fixture(scope='session')
+def login():
+    user = sign_in()
+    response = client.post("/login", data={"username": f"{user["login"]}", "password": "1234"})
+    yield response
     print("Login response:", response.status_code, response.json())
-    data = response.json()
-    return data["access_token"]
+
+@pytest.fixture(scope='session')
+def auth_token(login):
+    response = login.json()
+    return response["access_token"]

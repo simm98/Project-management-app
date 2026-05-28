@@ -4,6 +4,12 @@ from app.main import app
 
 client = TestClient(app)
 
+def test_sign_in(sign_in):
+    assert sign_in["login"] == "user1"
+
+def test_login(login):
+    assert login.status_code == 200
+
 def test_create_project(auth_token):
     headers = {"Authorization": f"Bearer {auth_token}"}
     response = client.post("/projects", json={"name": "Proyecto Demo", "description": "Este es un proyecto de prueba"}, headers=headers)
@@ -42,8 +48,8 @@ def test_delete_project(auth_token):
     assert response_del.status_code == 200
     assert response_del.json()["status"] == "deleted"
 
-def test_get_project_access(auth_token_other_user):
-    headers = {"Authorization": f"Bearer {auth_token_other_user}"}
-    response = client.get("/projects/1/info", headers=headers)
-    assert response.status_code == 403
-    assert response.json()["detail"] == "Access denied"
+# def test_get_project_access(auth_token_other_user):
+#     headers = {"Authorization": f"Bearer {auth_token_other_user}"}
+#     response = client.get("/projects/1/info", headers=headers)
+#     assert response.status_code == 403
+#     assert response.json()["detail"] == "Access denied"

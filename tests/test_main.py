@@ -37,9 +37,10 @@ def test_update_project(auth_token):
 def test_delete_project(auth_token):
     headers = {"Authorization": f"Bearer {auth_token}"}
     response = client.post("/projects", json={"name": "Proyecto Demo Delete", "description": "Este es un proyecto de prueba para borrar"}, headers=headers)
-    response = client.delete("/projects/2")
     assert response.status_code == 200
-    assert response.json()["status"] == "deleted"
+    response_del = client.delete("/projects/2")
+    assert response_del.status_code == 200
+    assert response_del.json()["status"] == "deleted"
 
 def test_get_project_access(auth_token_other_user):
     headers = {"Authorization": f"Bearer {auth_token_other_user}"}

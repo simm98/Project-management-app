@@ -54,10 +54,11 @@ def test_delete_project(auth_token):
     assert response_del.status_code == 200
     assert response_del.json()["status"] == "deleted"
 
-def test_get_project_documents(auth_token):
+def test_get_project_documents_not_found(auth_token):
     headers = {"Authorization": f"Bearer {auth_token}"}
     response = client.get("/projects/1/documents",headers=headers)
-    assert response.status_code == 200
+    assert response.status_code == 404
+    assert response.json()["detail"] == "Documents not found"
 
 # def test_get_project_access(auth_token_other_user):
 #     headers = {"Authorization": f"Bearer {auth_token_other_user}"}

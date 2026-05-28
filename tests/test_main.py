@@ -126,8 +126,8 @@ def test_update_document(auth_token):
     assert download_resp_update.status_code == 200
     assert download_resp_update.content == file_content_update
   
-# def test_delete_project_document_by_id(auth_token):
-#     headers = {"Authorization": f"Bearer {auth_token}"}
-#     response = client.delete("/document/1",headers=headers)
-#     assert response.status_code == 200
-#     assert response.json()["detail"] == "Document deleted successfully"
+def test_delete_project_document_by_id(auth_token):
+    headers = {"Authorization": f"Bearer {auth_token}"}
+    response = client.delete("/document/1",headers=headers)
+    assert response.status_code == 204
+    assert response.json()["detail"] == "Document deleted successfully"

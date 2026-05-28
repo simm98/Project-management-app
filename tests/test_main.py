@@ -5,14 +5,15 @@ from app.main import app
 client = TestClient(app)
 
 def test_sign_in(user_data, sign_in):
-    user_data["user"] = 'user1'
+    user_data["username"] = 'user1'
     response = sign_in()
-    assert response["login"] == "user1"
+    assert response.json()["login"] == "user1"
 
 def test_login(user_data, login):
-    user_data["user"] = 'user1'
+    user_data["username"] = 'user1'
     response = login()
     assert response.status_code == 200
+    assert "access_token" in response.json()
 
 def test_create_project(auth_token):
     headers = {"Authorization": f"Bearer {auth_token}"}

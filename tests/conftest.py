@@ -24,7 +24,7 @@ def login(user_data):
         return response
     return _login
 
-@pytest.fixture(scope='session')
+@pytest.fixture
 def auth_token(login):
     response = login().json()
     return response["access_token"]

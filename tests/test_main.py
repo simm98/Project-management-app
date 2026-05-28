@@ -25,4 +25,4 @@ def test_get_project_by_id(auth_token):
     headers = {"Authorization": f"Bearer {auth_token}"}
     response = client.get("/projects/1/info", headers=headers)
     assert response.status_code == 200
-    assert response.json()["id"] == "1"
+    assert response.json()["id"] == 1

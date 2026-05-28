@@ -60,8 +60,19 @@ def test_get_project_documents_not_found(auth_token):
     assert response.status_code == 404
     assert response.json()["detail"] == "Documents not found"
 
-# def test_get_project_access(auth_token_other_user):
-#     headers = {"Authorization": f"Bearer {auth_token_other_user}"}
-#     response = client.get("/projects/1/info", headers=headers)
-#     assert response.status_code == 403
-#     assert response.json()["detail"] == "Access denied"
+def test_sign_in_other_user(user_data, sign_in):
+    user_data["username"] = 'user2'
+    response = sign_in()
+    assert response.json()["login"] == "user2"
+
+def test_login_other_user(user_data, login):
+    user_data["username"] = 'user2'
+    response = login()
+    assert response.status_code == 200
+    assert "access_token" in response.json()
+
+def test_get_project_access(auth_token):
+    headers = {"Authorization": f"Bearer {auth_token}"}
+    response = client.get("/projects/1/info", headers=headers)
+    assert response.status_code == 403
+    assert response.json()["detail"] == "Access denied"

@@ -6,11 +6,13 @@ client = TestClient(app)
 
 def test_sign_in(users, sign_in):
     users["user"] = 'user1'
-    assert sign_in["login"] == "user1"
+    response = sign_in()
+    assert response["login"] == "user1"
 
 def test_login(users, login):
     users["user"] = 'user1'
-    assert login.status_code == 200
+    response = login()
+    assert response.status_code == 200
 
 def test_create_project(auth_token):
     headers = {"Authorization": f"Bearer {auth_token}"}

@@ -322,7 +322,7 @@ def update_document(document_id: int, file: UploadFile = File(...), db: Session 
         raise HTTPException(status_code=400, detail="Could not update document")
     return document
 
-@app.delete("/document/{document_id}", status_code=204)
+@app.delete("/document/{document_id}")
 def delete_document(document_id: int,db: Session = Depends(get_db),current_user: models.User = Depends(get_current_user)):
     """
     Borra documento en projecto si usuario es el owner.

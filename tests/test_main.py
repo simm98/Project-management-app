@@ -129,5 +129,5 @@ def test_update_document(auth_token):
 def test_delete_project_document_by_id(auth_token):
     headers = {"Authorization": f"Bearer {auth_token}"}
     response = client.delete("/document/1",headers=headers)
-    assert response.status_code == 204
+    assert response.status_code == 200
     assert response.json()["detail"] == "Document deleted successfully"

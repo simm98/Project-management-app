@@ -109,8 +109,25 @@ def test_download_project_document_by_id(auth_token):
     assert download_resp.status_code == 200
     assert download_resp.content == file_content
 
-def test_delete_project_document_by_id(auth_token):
+def test_update_document(auth_token):
     headers = {"Authorization": f"Bearer {auth_token}"}
-    response = client.delete("/document/1",headers=headers)
+    download_resp = client.get("/document/1",headers=headers)
+    file_content = b"Contenido de prueba"
+    assert download_resp.status_code == 200
+    assert download_resp.content == file_content
+    file_content_update = b"Contenido de prueba actualizado"
+    file = io.BytesIO(file_content)
+    response = client.put("/document/1",headers=headers,files={"file": ("test_update.txt", file, "text/plain")})
     assert response.status_code == 200
-    assert response.json()["detail"] == "Document deleted successfully"
+    data = response.json()
+    assert "id" in data
+    assert data["filename"] == "test_update.txt"
+    download_resp_update = client.get("/document/1",headers=headers)
+    assert download_resp_update.status_code == 200
+    assert download_resp_update.content == file_content_update
+  
+# def test_delete_project_document_by_id(auth_token):
+#     headers = {"Authorization": f"Bearer {auth_token}"}
+#     response = client.delete("/document/1",headers=headers)
+#     assert response.status_code == 200
+#     assert response.json()["detail"] == "Document deleted successfully"

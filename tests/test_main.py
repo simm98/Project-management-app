@@ -4,13 +4,13 @@ from app.main import app
 
 client = TestClient(app)
 
-def test_sign_in(users, sign_in):
-    users["user"] = 'user1'
+def test_sign_in(user_data, sign_in):
+    user_data["user"] = 'user1'
     response = sign_in()
     assert response["login"] == "user1"
 
-def test_login(users, login):
-    users["user"] = 'user1'
+def test_login(user_data, login):
+    user_data["user"] = 'user1'
     response = login()
     assert response.status_code == 200
 

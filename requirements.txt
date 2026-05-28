@@ -10,4 +10,3 @@ python-dotenv
 pytest
 pytest-cov
 httpx
-io

@@ -116,7 +116,7 @@ def test_update_document(auth_token):
     assert download_resp.status_code == 200
     assert download_resp.content == file_content
     file_content_update = b"Contenido de prueba actualizado"
-    file = io.BytesIO(file_content)
+    file = io.BytesIO(file_content_update)
     response = client.put("/document/1",headers=headers,files={"file": ("test_update.txt", file, "text/plain")})
     assert response.status_code == 200
     data = response.json()

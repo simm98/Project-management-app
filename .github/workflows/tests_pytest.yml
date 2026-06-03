@@ -38,6 +38,19 @@ jobs:
           echo SECRET_KEY = $SECRET_KEY >> .env/.env
           echo ALGORITHM = $ALGORITHM >> .env/.env
           echo ACCESS_TOKEN_EXPIRE_MINUTES = $ACCESS_TOKEN_EXPIRE_MINUTES >> .env/.env
+     
+      - name: Debug secrets
+        run: |
+          echo "DATABASE_URL=$DATABASE_URL"
+          echo "AWS_REGION=$AWS_REGION"
+          echo "POSTGRES_USER=$POSTGRES_USER"
+          echo "POSTGRES_PASSWORD=$POSTGRES_PASSWORD"
+          echo "POSTGRES_DB=$POSTGRES_DB"
+          echo "SECRET_KEY=$SECRET_KEY"
+          echo "ALGORITHM=$ALGORITHM"
+          echo "ACCESS_TOKEN_EXPIRE_MINUTES=$ACCESS_TOKEN_EXPIRE_MINUTES"
+          echo "UPLOAD_DIR=$UPLOAD_DIR"
+          echo "S3_BUCKET_NAME=$S3_BUCKET_NAME"
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v2

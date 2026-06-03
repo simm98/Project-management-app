@@ -45,6 +45,8 @@ jobs:
       - name: Build and start services
         run: |
           docker compose -f docker-compose.yml up -d --build
+          docker exec -it project-management-app env | grep DATABASE_URL
+
 
       - name: Wait for Postgres to be ready
         run: |

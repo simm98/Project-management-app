@@ -46,6 +46,8 @@ jobs:
         run: |
           docker compose -f docker-compose.yml up -d --build
 
+      - name: Debug environment
+        run: docker exec project-management-app env | grep DATABASE_URL
 
       - name: Wait for Postgres to be ready
         run: |

@@ -6,7 +6,7 @@ from sqlalchemy.orm import Session
 from . import database, models, schemas, crud
 from jose import JWTError, jwt
 from datetime import datetime, timedelta
-from app.services.s3_service import upload_file, download_file, get_file_url
+from app.services.s3_service import upload_file, download_file
 from dotenv import load_dotenv
 app = FastAPI()
 database.init_db()

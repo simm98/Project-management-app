@@ -33,18 +33,3 @@ def download_file(key: str, local_path: str):
         return local_path
     except ClientError as e:
         raise RuntimeError(f"Error al descargar archivo: {e}")
-
-def get_file_url(key: str, expires_in=3600):
-    """
-    Genera un URL pre-firmado para acceso temporal.
-    """
-    try:
-        url = s3_client.generate_presigned_url(
-            "get_object",
-            Params={"Bucket": S3_BUCKET, "Key": key},
-            ExpiresIn=expires_in
-        )
-        return url
-    except ClientError as e:
-        raise RuntimeError(f"Error al generar URL: {e}")
-

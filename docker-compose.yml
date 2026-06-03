@@ -1,7 +1,7 @@
 services:
   project-management-app:
     build: .
-    env_file: .env/.env
+    # env_file: .env/.env
     container_name: project-management-app
     ports:
       - '8000:8000'
@@ -10,9 +10,9 @@ services:
     image: postgres:15
     container_name: database-PostgreSQL
     environment:
-      POSTGRES_USER: admin
-      POSTGRES_PASSWORD: root123
-      POSTGRES_DB: postgres
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
     ports:
       - "5432:5432"
     volumes:

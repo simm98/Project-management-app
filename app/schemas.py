@@ -20,6 +20,7 @@ class DocumentResponse(BaseModel):
     id: int
     filename: str
     content_type: str
+    project_id: int
     file_path: str
     class Config:
         from_attributes = True

@@ -277,9 +277,9 @@ def get_download_document(document_id: int, db: Session = Depends(get_db), curre
         retorna descarga de documento cargado en proyecto.
     """
     document = crud.get_document_by_id(db, document_id)
-    project = db.query(models.Project).filter(models.Project.id == document.project_id).first()
     if not document:
         raise HTTPException(status_code=404, detail="Document not found")
+    project = crud.get_project_id_by_document_id(db, document)
     if not project:  
         raise HTTPException(status_code=404, detail="Project not found")
     if current_user.id != project.owner_id:
@@ -306,9 +306,9 @@ def update_document(document_id: int, file: UploadFile = File(...), db: Session 
         retorna objeto de documento actualizado cargado en proyecto, mantiene el id.
     """
     document = crud.get_document_by_id(db, document_id)
-    project = db.query(models.Project).filter(models.Project.id == document.project_id).first()
     if not document:
         raise HTTPException(status_code=404, detail="Document not found")
+    project = crud.get_project_id_by_document_id(db, document)
     if not project:  
         raise HTTPException(status_code=404, detail="Project not found")
     if current_user.id != project.owner_id:
@@ -344,9 +344,9 @@ def delete_document(document_id: int,db: Session = Depends(get_db),current_user:
         retorna JSON de confirmación de que el documento en proyecto fue borrado exitosamente.
     """
     document = crud.get_document_by_id(db, document_id)
-    project = db.query(models.Project).filter(models.Project.id == document.project_id).first()
     if not document:
         raise HTTPException(status_code=404, detail="Document not found")
+    project = crud.get_project_id_by_document_id(db, document)
     if not project:
         raise HTTPException(status_code=404, detail="Project not found")
     if current_user.id != project.owner_id:

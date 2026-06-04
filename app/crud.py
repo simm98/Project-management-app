@@ -56,7 +56,16 @@ def add_document_to_project(db:Session, project_id: int, filename: str, content_
     return document
 
 def get_document_by_id(db:Session, document_id: int):
-    return db.query(models.Document).filter(models.Document.id == document_id).first()
+    response = db.query(models.Document).filter(models.Document.id == document_id).first()
+    if not response:
+        response = None
+    return response
+
+def get_project_id_by_document_id(db:Session, document: schemas.DocumentResponse):
+    response = db.query(models.Project).filter(models.Project.id == document.project_id).first()
+    if not response:
+        response = None
+    return response
 
 def update_document_by_id(db:Session, document_id: int, filename: str, content_type: str, file_path: str):
     document = db.query(models.Document).filter(models.Document.id == document_id).first()

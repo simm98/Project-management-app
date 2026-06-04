@@ -7,16 +7,6 @@ services:
     container_name: project-management-tests
     environment:
       PYTHONPATH: /app
-      # POSTGRES_USER: ${POSTGRES_USER}
-      # POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
-      # POSTGRES_DB: ${POSTGRES_DB}
-      # AWS_REGION: ${AWS_REGION}
-      # S3_BUCKET_NAME: ${S3_BUCKET_NAME}
-      # DATABASE_URL: ${DATABASE_URL}
-      # UPLOAD_DIR: ${UPLOAD_DIR}
-      # SECRET_KEY: ${SECRET_KEY}
-      # ALGORITHM: ${ALGORITHM}
-      # ACCESS_TOKEN_EXPIRE_MINUTES: ${ACCESS_TOKEN_EXPIRE_MINUTES}
     command: sh -c "poetry install --with dev && poetry run pytest tests -s --cov=app --cov-report=xml:coverage/coverage.xml"
     volumes:
         - ./coverage:/app/coverage

@@ -1,0 +1,31 @@
+[tool.poetry]
+name = "project-management-app-package-build"
+version = "0.1.0"
+description = "Project management app package manager for EPAM Specialization training project."
+authors = ["Isaac Mendoza <isaac_mendoza@epam.com>"]
+readme = "README.md"
+packages = [{ include = "app" }]
+
+[tool.poetry.dependencies]
+python = "^3.13"
+fastapi = "^0.111.0"
+uvicorn = {extras = ["standard"], version = "^0.30.0"}
+sqlalchemy = "^2.0.30"
+psycopg2-binary = "^2.9.9"
+python-jose = {extras = ["cryptography"], version = "^3.3.0"}
+python-multipart = "^0.0.9"
+typing = "^3.7.4.3"
+boto3 = "^1.34.0"
+python-dotenv = "^1.0.1"
+httpx = "^0.27.0"
+
+[tool.poetry.group.dev.dependencies]
+pytest = "^8.2.0"
+pytest-cov = "^5.0.0"
+
+[build-system]
+requires = ["flit_core>=3.2"]
+build-backend = "flit_core.buildapi"
+
+
+

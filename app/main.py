@@ -259,7 +259,8 @@ def upload_document(project_id: int, file: UploadFile = File(...), db: Session =
     document = crud.add_document_to_project(db, project_id, file.filename, file.content_type, file_path)
     if not document:
         raise HTTPException(status_code=400, detail="Could not add document")
-    uploaded_document = upload_file(file.file, f"uploads/project_{project_id}/document_{document.id}/{file.filename}")
+    with open(file_path, "rb") as f:
+        upload_file(f, f"uploads/project_{project_id}/document_{document.id}/{file.filename}")
     return document
 
 @app.get("/document/{document_id}")

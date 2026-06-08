@@ -325,6 +325,8 @@ def update_document(document_id: int, file: UploadFile = File(...), db: Session 
     document = crud.update_document_by_id(db, document_id, file.filename, file.content_type, file_path)
     if not document:
         raise HTTPException(status_code=400, detail="Could not update document")
+    with open(file_path, "rb") as f:
+        upload_file(f, f"uploads/project_{document.project_id}/document_{document.id}/{file.filename}")
     return document
 
 @app.delete("/document/{document_id}")

@@ -9,8 +9,17 @@ from datetime import datetime, timedelta
 from app.services.s3_service import upload_file, download_file
 from dotenv import load_dotenv
 app = FastAPI()
-database.init_db()
 load_dotenv()
+
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="login")
+UPLOAD_DIR = os.getenv("UPLOAD_DIR")
+SECRET_KEY = os.getenv("SECRET_KEY")  
+ALGORITHM = os.getenv("ALGORITHM")
+ACCESS_TOKEN_EXPIRE_MINUTES = int(os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES"))
+ORM_ENABLE = os.getenv("ORM_ENABLE")
+os.makedirs(UPLOAD_DIR, exist_ok=True)
+
+database.init_db()
 
 def get_db():
     db = database.SessionLocal()
@@ -18,12 +27,6 @@ def get_db():
         yield db
     finally:
         db.close()
-
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="login")
-UPLOAD_DIR = os.getenv("UPLOAD_DIR")
-SECRET_KEY = os.getenv("SECRET_KEY")  
-ALGORITHM = os.getenv("ALGORITHM")
-ACCESS_TOKEN_EXPIRE_MINUTES = int(os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES"))
 
 def create_access_token(data: dict):
     to_encode = data.copy()
@@ -250,13 +253,13 @@ def upload_document(project_id: int, file: UploadFile = File(...), db: Session =
         raise HTTPException(status_code=404, detail="Project not found")
     if project.owner_id != current_user.id:
         raise HTTPException(status_code=403, detail="Access denied")
-    os.makedirs(UPLOAD_DIR, exist_ok=True)
     file_path = os.path.join(UPLOAD_DIR, file.filename)
     with open(file_path, "wb") as f:
         f.write(file.file.read())
     document = crud.add_document_to_project(db, project_id, file.filename, file.content_type, file_path)
     if not document:
         raise HTTPException(status_code=400, detail="Could not add document")
+    uploaded_document = upload_file(file.file, f"uploads/project_{project_id}/document_{document.id}/{file.filename}")
     return document
 
 @app.get("/document/{document_id}")
@@ -284,7 +287,8 @@ def get_download_document(document_id: int, db: Session = Depends(get_db), curre
         raise HTTPException(status_code=404, detail="Project not found")
     if current_user.id != project.owner_id:
         raise HTTPException(status_code=403, detail="Access denied")
-    return FileResponse(path=document.file_path, filename=document.filename, media_type=document.content_type)
+    downloaded_file_path = download_file(f"uploads/project_{document.project_id}/document_{document.id}/{document.filename}")
+    return FileResponse(path=downloaded_file_path, filename=document.filename, media_type=document.content_type)
 
 @app.put("/document/{document_id}")
 def update_document(document_id: int, file: UploadFile = File(...), db: Session = Depends(get_db), current_user: models.User = Depends(get_current_user)):

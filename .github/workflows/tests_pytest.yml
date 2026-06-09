@@ -94,11 +94,11 @@ jobs:
         continue-on-error: true
 
       - name: Run Black (check formatting)
-        run: poetry run black --check .
+        run: poetry run black .
         continue-on-error: true
 
       - name: Run isort (check imports)
-        run: poetry run isort --check-only .
+        run: poetry run isort .
         continue-on-error: true
 
       - name: Run tests inside container

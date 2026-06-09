@@ -104,7 +104,7 @@ jobs:
         uses: appleboy/ssh-action@v0.1.10
         with:
           host: ${{ secrets.EC2_HOST }}
-          username: ec2-user
+          username: ubuntu
           key: ${{ secrets.EC2_SSH_KEY }}
           script: |
             docker pull <account_id>.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/myapp:latest

@@ -78,6 +78,12 @@ jobs:
             sleep 5
           done
 
+      - name: Install Poetry
+        run: pip install poetry
+
+      - name: Install dependencies
+        run: poetry install
+        
       - name: Run Flake8 (lint)
         run: poetry run flake8 .
 

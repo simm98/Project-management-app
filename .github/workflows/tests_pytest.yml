@@ -78,6 +78,15 @@ jobs:
             sleep 5
           done
 
+      - name: Run Flake8 (lint)
+        run: poetry run flake8 .
+
+      - name: Run Black (check formatting)
+        run: poetry run black --check .
+
+      - name: Run isort (check imports)
+        run: poetry run isort --check-only .
+
       - name: Run tests inside container
         run: |
           docker compose -f docker-compose.yml -f docker-compose.override.yml up --build --exit-code-from test
@@ -96,19 +105,6 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ secrets.AWS_REGION }}
 
-      - name: Login to Amazon ECR
-        id: login-ecr
-        uses: aws-actions/amazon-ecr-login@v1
- 
-      - name: Deploy on EC2
-        uses: appleboy/ssh-action@v0.1.10
-        with:
-          host: ${{ secrets.EC2_HOST }}
-          username: ubuntu
-          key: ${{ secrets.EC2_SSH_KEY }}
-          script: |
-            docker pull <account_id>.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/myapp:latest
-            docker-compose -f docker-compose.yml up -d --build
 
       - name: Shut down services
         if: always()

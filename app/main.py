@@ -21,6 +21,7 @@ os.makedirs(UPLOAD_DIR, exist_ok=True)
 
 database.init_db()
 
+
 def get_db():
     db = database.SessionLocal()
     try:
@@ -28,12 +29,14 @@ def get_db():
     finally:
         db.close()
 
+
 def create_access_token(data: dict):
     to_encode = data.copy()
     expire = datetime.utcnow() + timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
     to_encode.update({"exp": expire})
     encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
     return encoded_jwt
+
 
 def get_current_user(token: str = Depends(oauth2_scheme), db: Session = Depends(get_db)):
     try:
@@ -48,9 +51,7 @@ def get_current_user(token: str = Depends(oauth2_scheme), db: Session = Depends(
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Usuario no encontrado", headers={"WWW-Authenticate": "Bearer"})
     return user
 
-###########################################################################################################################################
-######################################################Endpoints############################################################################
-###########################################################################################################################################
+
 @app.post("/auth", response_model=schemas.UserResponse)
 def create_user(user: schemas.UserCreate, db: Session = Depends(get_db)):
     """
@@ -69,6 +70,7 @@ def create_user(user: schemas.UserCreate, db: Session = Depends(get_db)):
     if db_user:
         raise HTTPException(status_code=400, detail="User already exists")
     return crud.create_user(db, user)
+
 
 @app.post("/login")
 def login(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(get_db)):
@@ -92,6 +94,7 @@ def login(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depend
     access_token = create_access_token({"sub": str(user.id)})
     return {"access_token": access_token, "token_type": "bearer"}
 
+
 @app.post("/projects", response_model=schemas.ProjectResponse)
 def create_project(project: schemas.ProjectCreate, db: Session = Depends(get_db), current_user: models.User = Depends(get_current_user)):
     """
@@ -111,6 +114,7 @@ def create_project(project: schemas.ProjectCreate, db: Session = Depends(get_db)
     """
     return crud.create_project(db, project, current_user)
 
+
 @app.get("/projects", response_model=list[schemas.ProjectResponse])
 def get_projects(db: Session = Depends(get_db), current_user: models.User = Depends(get_current_user)):
     """
@@ -127,6 +131,7 @@ def get_projects(db: Session = Depends(get_db), current_user: models.User = Depe
         retorna lista de projectos disponibles para usuario.
     """
     return crud.get_projects_by_user(db, current_user.id)
+
 
 @app.get("/projects/{project_id}/info", response_model=schemas.ProjectResponse)
 def get_project_details(project_id: int, db: Session = Depends(get_db), current_user: models.User = Depends(get_current_user)):
@@ -153,6 +158,7 @@ def get_project_details(project_id: int, db: Session = Depends(get_db), current_
             raise HTTPException(status_code=403, detail="Access denied")
     return project
 
+
 @app.put("/projects/{project_id}/info", response_model=schemas.ProjectResponse)
 def update_project_details(project_id: int, project_update: schemas.ProjectUpdate, db: Session = Depends(get_db), current_user: models.User = Depends(get_current_user)):
     """
@@ -176,6 +182,7 @@ def update_project_details(project_id: int, project_update: schemas.ProjectUpdat
     if not project:
         raise HTTPException(status_code=404, detail="Project not found")
     return project
+
 
 @app.delete("/projects/{project_id}")
 def delete_project(project_id: int, db: Session = Depends(get_db), current_user: models.User = Depends(get_current_user)):
@@ -202,7 +209,8 @@ def delete_project(project_id: int, db: Session = Depends(get_db), current_user:
         return {"project_id": project_id, "status": "deleted"}
     else: 
         raise HTTPException(status_code=403, detail="Access denied")
-    
+
+   
 @app.get("/projects/{project_id}/documents", response_model=schemas.ProjectDocumentsResponse)
 def get_project_documents(project_id: int, db: Session = Depends(get_db), current_user: models.User = Depends(get_current_user)):
     """
@@ -263,6 +271,7 @@ def upload_document(project_id: int, file: UploadFile = File(...), db: Session =
         upload_file(f, f"uploads/project_{project_id}/document_{document.id}/{file.filename}")
     return document
 
+
 @app.get("/document/{document_id}")
 def get_download_document(document_id: int, db: Session = Depends(get_db), current_user: models.User = Depends(get_current_user)):
     """
@@ -290,6 +299,7 @@ def get_download_document(document_id: int, db: Session = Depends(get_db), curre
         raise HTTPException(status_code=403, detail="Access denied")
     downloaded_file_path = download_file(f"uploads/project_{document.project_id}/document_{document.id}/{document.filename}")
     return FileResponse(path=downloaded_file_path, filename=document.filename, media_type=document.content_type)
+
 
 @app.put("/document/{document_id}")
 def update_document(document_id: int, file: UploadFile = File(...), db: Session = Depends(get_db), current_user: models.User = Depends(get_current_user)):
@@ -329,6 +339,7 @@ def update_document(document_id: int, file: UploadFile = File(...), db: Session 
         upload_file(f, f"uploads/project_{document.project_id}/document_{document.id}/{file.filename}")
     return document
 
+
 @app.delete("/document/{document_id}")
 def delete_document(document_id: int,db: Session = Depends(get_db),current_user: models.User = Depends(get_current_user)):
     """
@@ -360,6 +371,7 @@ def delete_document(document_id: int,db: Session = Depends(get_db),current_user:
         raise HTTPException(status_code=403, detail="Access denied")
     crud.delete_document_by_id(db, document_id)
     return {"detail": "Document deleted successfully"}
+
 
 @app.post("/project/{project_id}/invite", response_model=schemas.ProjectResponse)
 def grant_access_to_project(project_id: int, user: str, db: Session = Depends(get_db), current_user: models.User = Depends(get_current_user)):

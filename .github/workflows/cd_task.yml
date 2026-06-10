@@ -1,4 +1,4 @@
-name: CI with AWS EC2
+name: CD with AWS EC2
 
 on: 
   workflow_run:
@@ -61,24 +61,6 @@ jobs:
             echo "SECRET_KEY=${SECRET_KEY}" >> .env/.env
             echo "ALGORITHM=${ALGORITHM}" >> .env/.env
             echo "ACCESS_TOKEN_EXPIRE_MINUTES=${ACCESS_TOKEN_EXPIRE_MINUTES}" >> .env/.env
-      
-      - name: Install Poetry
-        run: sudo pip install poetry
-
-      - name: Install dependencies
-        run: sudo poetry install
-
-      - name: Run Flake8 (lint)
-        run: sudo poetry run flake8 .
-        continue-on-error: true
-
-      - name: Run Black (check formatting)
-        run: sudo poetry run black .
-        continue-on-error: true
-
-      - name: Run isort (check imports)
-        run: sudo poetry run isort .
-        continue-on-error: true
 
       - name: Build and start services
         run: |

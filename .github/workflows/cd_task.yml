@@ -39,7 +39,7 @@ jobs:
           username: ubuntu
           key: ${{ secrets.EC2_SSH_KEY }}
           source: "."
-          target: "~/Project-management-app"
+          target: "/home/ubuntu/Project-management-app/"
 
       - name: Deploy app on EC2
         uses: appleboy/ssh-action@v0.1.10
@@ -48,7 +48,7 @@ jobs:
           username: ubuntu
           key: ${{ secrets.EC2_SSH_KEY }}
           script: |
-            cd ~/Project-management-app/app
+            cd /home/ubuntu/Project-management-app/
             # Crear archivo .env dentro de EC2
             mkdir -p .env
             echo "POSTGRES_USER=${POSTGRES_USER}" >> .env/.env
@@ -61,13 +61,11 @@ jobs:
             echo "SECRET_KEY=${SECRET_KEY}" >> .env/.env
             echo "ALGORITHM=${ALGORITHM}" >> .env/.env
             echo "ACCESS_TOKEN_EXPIRE_MINUTES=${ACCESS_TOKEN_EXPIRE_MINUTES}" >> .env/.env
+        
+            # Build and start services
+            sudo docker compose -f docker-compose.yml up -d --build
 
-      - name: Build and start services
-        run: |
-          sudo docker compose -f docker-compose.yml up -d --build
-
-      - name: Wait for Postgres to be ready
-        run: |
+            # Wait for Postgres to be ready
             until sudo docker exec database-PostgreSQL pg_isready -U admin; do
               echo "Waiting for Postgres..."
               sleep 5

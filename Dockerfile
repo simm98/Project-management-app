@@ -3,7 +3,7 @@ FROM python:3.13-slim
 
 # Dependencias del sistema necesarias para psycopg2 y compilación
 RUN apt-get update && apt-get install -y build-essential libpq-dev && rm -rf /var/lib/apt/lists/*
-
+RUN mkdir -p /tmp /var/tmp /usr/tmp && chmod 1777 /tmp /var/tmp /usr/tmp
 #Se localiza en la carpeta app para correr la app
 WORKDIR /app
 

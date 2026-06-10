@@ -6,8 +6,8 @@ on:
     types: 
       - completed
 jobs:
-  build:
-    runs-on: self-hosted
+  deploy:
+    runs-on: ubuntu-latest
     env:
       POSTGRES_USER: ${{ secrets.POSTGRES_USER }}
       POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
@@ -25,69 +25,71 @@ jobs:
       ACCESS_TOKEN_EXPIRE_MINUTES: ${{ secrets.ACCESS_TOKEN_EXPIRE_MINUTES }}
 
     steps:
-
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v1
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ secrets.AWS_REGION }}
-      
-      - name: Deploy on EC2
+
+      - name: Copy files to EC2
         uses: appleboy/scp-action@v0.1.7
         with:
           host: ${{ secrets.EC2_HOST }}
           username: ubuntu
           key: ${{ secrets.EC2_SSH_KEY }}
           source: "."
-          target: "~/app"
+          target: "~/Project-management-app"
 
-      - name: Create .env file
-        run: |
-          cd app
-          mkdir -p .env
-          echo "POSTGRES_USER=$POSTGRES_USER" >> .env/.env
-          echo "POSTGRES_PASSWORD=$POSTGRES_PASSWORD" >> .env/.env
-          echo "POSTGRES_DB=$POSTGRES_DB" >> .env/.env
-          echo AWS_REGION = $AWS_REGION >> .env/.env
-          echo S3_BUCKET_NAME = $S3_BUCKET_NAME >> .env/.env
-          echo AWS_ACCESS_KEY_ID = $AWS_ACCESS_KEY_ID >> .env/.env
-          echo AWS_SECRET_ACCESS_KEY = $AWS_SECRET_ACCESS_KEY >> .env/.env
-          echo EC2_HOST = $EC2_HOST >> .env/.env
-          echo EC2_SSH_KEY = $EC2_SSH_KEY >> .env/.env
-          echo DATABASE_URL = $DATABASE_URL >> .env/.env
-          echo UPLOAD_DIR = $UPLOAD_DIR >> .env/.env
-          echo SECRET_KEY = $SECRET_KEY >> .env/.env
-          echo ALGORITHM = $ALGORITHM >> .env/.env
-          echo ACCESS_TOKEN_EXPIRE_MINUTES = $ACCESS_TOKEN_EXPIRE_MINUTES >> .env/.env
-     
-      - name: Debug secrets
-        run: |
-          echo "DATABASE_URL=$DATABASE_URL"
-          echo "AWS_REGION=$AWS_REGION"
-          echo "POSTGRES_USER=$POSTGRES_USER"
-          echo "POSTGRES_PASSWORD=$POSTGRES_PASSWORD"
-          echo "POSTGRES_DB=$POSTGRES_DB"
-          echo "SECRET_KEY=$SECRET_KEY"
-          echo "ALGORITHM=$ALGORITHM"
-          echo "ACCESS_TOKEN_EXPIRE_MINUTES=$ACCESS_TOKEN_EXPIRE_MINUTES"
-          echo "UPLOAD_DIR=$UPLOAD_DIR"
-          echo "S3_BUCKET_NAME=$S3_BUCKET_NAME"
-          echo "AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID"
-          echo "AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY"
-          echo "EC2_HOST=$EC2_HOST"
-          echo "EC2_SSH_KEY=$EC2_SSH_KEY"
+      - name: Deploy app on EC2
+        uses: appleboy/ssh-action@v0.1.10
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ubuntu
+          key: ${{ secrets.EC2_SSH_KEY }}
+          script: |
+            cd ~/Project-management-app/app
+            # Crear archivo .env dentro de EC2
+            mkdir -p .env
+            echo "POSTGRES_USER=${POSTGRES_USER}" >> .env/.env
+            echo "POSTGRES_PASSWORD=${POSTGRES_PASSWORD}" >> .env/.env
+            echo "POSTGRES_DB=${POSTGRES_DB}" >> .env/.env
+            echo "AWS_REGION=${AWS_REGION}" >> .env/.env
+            echo "S3_BUCKET_NAME=${S3_BUCKET_NAME}" >> .env/.env
+            echo "DATABASE_URL=${DATABASE_URL}" >> .env/.env
+            echo "UPLOAD_DIR=${UPLOAD_DIR}" >> .env/.env
+            echo "SECRET_KEY=${SECRET_KEY}" >> .env/.env
+            echo "ALGORITHM=${ALGORITHM}" >> .env/.env
+            echo "ACCESS_TOKEN_EXPIRE_MINUTES=${ACCESS_TOKEN_EXPIRE_MINUTES}" >> .env/.env
+      
+      - name: Install Poetry
+        run: sudo pip install poetry
+
+      - name: Install dependencies
+        run: sudo poetry install
+
+      - name: Run Flake8 (lint)
+        run: sudo poetry run flake8 .
+        continue-on-error: true
+
+      - name: Run Black (check formatting)
+        run: sudo poetry run black .
+        continue-on-error: true
+
+      - name: Run isort (check imports)
+        run: sudo poetry run isort .
+        continue-on-error: true
 
       - name: Build and start services
         run: |
-          docker compose -f docker-compose.yml up -d --build
+          sudo docker compose -f docker-compose.yml up -d --build
 
       - name: Wait for Postgres to be ready
         run: |
-          until docker exec database-PostgreSQL pg_isready -U admin; do
-            echo "Waiting for Postgres..."
-            sleep 5
-          done
+            until sudo docker exec database-PostgreSQL pg_isready -U admin; do
+              echo "Waiting for Postgres..."
+              sleep 5
+            done
 
 
 

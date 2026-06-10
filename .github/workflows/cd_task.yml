@@ -53,6 +53,7 @@ jobs:
           script: |
             cd /home/ubuntu/Project-management-app/
             # Crear archivo .env dentro de EC2
+            mkdir -p .env
             cat <<EOF > .env/.env
             POSTGRES_USER=${POSTGRES_USER}
             POSTGRES_PASSWORD=${POSTGRES_PASSWORD}

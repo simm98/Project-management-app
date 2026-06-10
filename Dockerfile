@@ -13,11 +13,11 @@ COPY . .
 COPY pyproject.toml poetry.lock README.md ./
 
 # Instalar Poetry y dependencias
-RUN sudo pip install poetry && sudo poetry config virtualenvs.create false && sudo poetry install --no-interaction --no-ansi --only main
+RUN pip install poetry && poetry config virtualenvs.create false && poetry install --no-interaction --no-ansi --only main
 
 #Expone puerto 8000
 EXPOSE 8000
 
 #Comando de consola para arrancar app
-CMD ["sudo", "poetry", "run", "uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
+CMD ["poetry", "run", "uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
 

@@ -71,7 +71,7 @@ jobs:
             EOF
         
             # Build and start services
-            sudo docker compose --env-file .env/.env up -d --build
+            sudo docker compose -f docker-compose.yml --env-file .env/.env up -d --build
 
             # Wait for Postgres to be ready
             until sudo docker exec database-PostgreSQL pg_isready -U admin; do

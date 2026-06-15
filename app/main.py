@@ -10,7 +10,6 @@ from app.services.s3_service import upload_file, download_file
 from dotenv import load_dotenv
 app = FastAPI()
 load_dotenv()
-
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="login")
 UPLOAD_DIR = os.getenv("UPLOAD_DIR")
 SECRET_KEY = os.getenv("SECRET_KEY")  
@@ -18,7 +17,6 @@ ALGORITHM = os.getenv("ALGORITHM")
 ACCESS_TOKEN_EXPIRE_MINUTES = int(os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES"))
 ORM_ENABLE = os.getenv("ORM_ENABLE")
 os.makedirs(UPLOAD_DIR, exist_ok=True)
-
 database.init_db()
 
 

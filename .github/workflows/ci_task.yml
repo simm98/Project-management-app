@@ -117,8 +117,7 @@ jobs:
       - name: Shut down services
         if: always()
         run: docker compose -f docker-compose.yml down
-  
-  
+
   merge:
     needs: lint-test
     runs-on: ubuntu-latest
